@@ -1,3 +1,75 @@
+# Changelog
+
+## 1.9.0
+
+##### Chores
+
+*  Use a specific version of Pyroscope for e2e tests (#587) (ab5a4543)
+
+##### Continuous Integration
+
+*  Add a workflow to publish a PR/branch (#578) (c690fc67)
+
+##### New Features
+
+* **Metrics From Profiles:**  Automatically prefix metric name (#592) (7404aba4)
+*  Add rate calculation support and step synchronization (#548) (0538e0bc)
+* **AI:**  Integrate with Grafana Assistant (#558) (0756b05a)
+
+##### Bug Fixes
+
+*  recording rules list to use rule id as row id (#591) (d07f2528)
+*  use rule id as row id (4e261a87)
+
+
+## 1.8.1
+
+
+## 1.8.0
+
+##### Chores
+
+*  Upgrade playwright to 1.55 (#576) (601ee656)
+*  Create plugin update (#564) (2ef28dc6)
+
+##### Continuous Integration
+
+*  Use shared action to create a changelog (32e56544)
+*  Update release workflow (#573) (939c7b68)
+*  Push build to ops (#570) (f42be894)
+*  Use shared workflows for publishing (#565) (96855248)
+
+# [1.7.0](https://github.com/grafana/profiles-drilldown/compare/v1.6.0...v1.7.0) (2025-07-31)
+
+
+### Features
+
+* Propagate the redirect_uri for GitHub logins ([#541](https://github.com/grafana/profiles-drilldown/issues/541)) ([d0ae06c](https://github.com/grafana/profiles-drilldown/commit/d0ae06c4a90cbfc5b6e1d1764b5ea196e3029f7d))
+* **Recording Rules:** Pass function name to recording rules ([#543](https://github.com/grafana/profiles-drilldown/issues/543)) ([9000fd4](https://github.com/grafana/profiles-drilldown/commit/9000fd4d478dbac7adb59d7d07f421be570d58ec))
+* Support for provisioned recording rules ([#549](https://github.com/grafana/profiles-drilldown/issues/549)) ([dc5fea3](https://github.com/grafana/profiles-drilldown/commit/dc5fea349e8198dce53f32e27ee124abc42bb9e7))
+
+
+
+# [1.6.0](https://github.com/grafana/profiles-drilldown/compare/v1.5.0...v1.6.0) (2025-07-29)
+
+
+### Features
+
+* **GitHub:** Allow providing GitHub integration details manually ([#538](https://github.com/grafana/profiles-drilldown/issues/538)) ([70a61be](https://github.com/grafana/profiles-drilldown/commit/70a61be46936daa7b354d2671538bb2bc6c55c76))
+
+
+
+# [1.5.0](https://github.com/grafana/profiles-drilldown/compare/v1.4.1...v1.5.0) (2025-07-10)
+
+
+### Features
+
+* **GitHub Integration:** Keep GitHub auth cookie within the same session if the data source doesn't change ([#535](https://github.com/grafana/profiles-drilldown/issues/535)) ([8a7b157](https://github.com/grafana/profiles-drilldown/commit/8a7b15791906ce4218a3a4ebf43969039b529727))
+* **Metrics from Profiles:** Allow creating recording rules for all services ([#525](https://github.com/grafana/profiles-drilldown/issues/525)) ([837393b](https://github.com/grafana/profiles-drilldown/commit/837393b8d8ef41d50528722b03071c16ebc027fa))
+* **metrics:** Show annotations ([#522](https://github.com/grafana/profiles-drilldown/issues/522)) ([5259b0b](https://github.com/grafana/profiles-drilldown/commit/5259b0b449bd37e18e1d406bc988a44f7f7dc709))
+
+
+
 ## [1.4.1](https://github.com/grafana/profiles-drilldown/compare/v1.4.0...v1.4.1) (2025-05-21)
 
 
