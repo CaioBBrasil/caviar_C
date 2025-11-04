@@ -5,10 +5,9 @@ import time
 import airsim as ARS
 import numpy as np
 
-from kernel.logger import LOGGER
+from kernel.management_layer import LOGGER, PROCESS, subprocess
 from kernel.module import module
 from kernel.nats import NATS
-from kernel.process import PROCESS, subprocess
 
 from .airsim_tools import AirSimTools
 

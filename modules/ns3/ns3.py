@@ -4,11 +4,10 @@ import time
 import aiofiles
 import shutil
 
-from kernel.buffer import Buffer
-from kernel.logger import LOGGER
+from kernel.buffer_layer import Buffer
+from kernel.management_layer import LOGGER, PROCESS
 from kernel.module import module
 from kernel.nats import NATS, asyncio
-from kernel.process import PROCESS
 
 
 class ns3(module):

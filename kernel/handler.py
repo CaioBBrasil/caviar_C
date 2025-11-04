@@ -4,8 +4,8 @@ import sys
 import threading
 from functools import wraps
 
-from .logger import LOGGER
-from .process import PROCESS
+from .management_layer import LOGGER, PROCESS
+
 
 
 class handler:

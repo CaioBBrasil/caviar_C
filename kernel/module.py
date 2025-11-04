@@ -2,11 +2,11 @@ import asyncio
 import os
 from abc import ABC, abstractmethod
 
-from .buffer import Buffer
+from .buffer_layer import Buffer
 from .handler import handler
-from .logger import LOGGER
 from .nats import NATS
-from .process import PROCESS
+from .management_layer import LOGGER, PROCESS
+
 
 LOOP = asyncio.new_event_loop()
 asyncio.set_event_loop(LOOP)
@@ -84,6 +84,7 @@ class module(ABC):
         """
         This method initializes the module's subscription.
         """
+        
         LOOP.run_until_complete(
             NATS.init_subscription(
                 callback=self.__callback, module_name=self.__class__.__name__
@@ -96,12 +97,16 @@ class module(ABC):
         This method is the internal message callback.
         It is responsible for calling the user-defined callback and setting the available flag.
         """
+        
         msg = NATS.decode(msg, self.__class__.__name__)
+            
+            
         """
         @TODO: This is probably causing a soft-bug, since the callback could be innvoked
         multiple time by some module message. So the control message may be backpressured
         and the module will not be able to execute the step.
         """
+        
         if msg is None:
             async with self._lock:
                 await self.__execute_step()

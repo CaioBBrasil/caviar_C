@@ -6,13 +6,11 @@ from pathlib import Path
 
 from monitor import Monitor
 
-from .asynchronous import Async, Scheduler
+from .scheduler_layer import Async, Scheduler, Sync
 from .handler import handler
-from .logger import LOGGER, logging
+from .management_layer import LOGGER, logging, PROCESS
 from .module import module
 from .nats import NATS
-from .process import PROCESS
-from .synchronous import Sync
 
 # from .synchronous import Sync
 

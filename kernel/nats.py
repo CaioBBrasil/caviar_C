@@ -5,8 +5,7 @@ import nats as Nats
 
 from monitor import Monitor
 
-from .logger import LOGGER, logging
-from .process import PROCESS, subprocess
+from .management_layer import LOGGER, PROCESS, logging, subprocess
 
 logging.getLogger("nats").setLevel(logging.CRITICAL)  # Suppress NATS logs
 
@@ -148,19 +147,21 @@ class nats:
         """
         subscription = "kernel." + module_name
         LOGGER.debug(f"Subscribing to \033[1m {subscription} \033[0m")
-
+    
         await asyncio.sleep(
             0.5
         )  # __Really ugly__ hack to wait for the NATS server to start
 
         nc = None
+        
         if module_name in self.__clients:
             LOGGER.debug(f"Using existing client")
             nc = self.__clients[module_name]
         else:
             nc = await Nats.connect(allow_reconnect=True)
             self.__clients[module_name] = nc
-
+            
+        
         await nc.subscribe(subscription, cb=callback)
         await nc.flush()
 
@@ -200,6 +201,7 @@ class nats:
         nc = await Nats.connect()
         LOGGER.debug(f"Multicasting to {references}")
         subjects = [f"kernel.{reference}" for reference in references]
+        
         if not message:
             message = b"\00"
         """

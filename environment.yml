@@ -1,4 +1,4 @@
-name: caviar-ntn
+name: caviar-c
 channels:
   - defaults
 dependencies:

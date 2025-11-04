@@ -9,7 +9,7 @@ import airsim
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from kernel.logger import LOGGER, logging
+from kernel.management_layer import LOGGER, logging
 
 logging.getLogger("tornado.general").setLevel(logging.ERROR)
 sys.path.append("./")
