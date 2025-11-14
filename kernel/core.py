@@ -11,6 +11,7 @@ from .handler import handler
 from .management_layer import LOGGER, logging, PROCESS
 from .module import module
 from .nats import NATS
+from .the_syncronizator import msg_syncronizator
 
 # from .synchronous import Sync
 
@@ -73,6 +74,7 @@ class core:
                 module_config = json.load(file)
                 module_name = module_config["module"]["name"]
                 self.__modules[module_name] = module_config["module"]
+        
         self.module_names = self.__check_correct_format()
 
     @handler.exception_handler
@@ -160,24 +162,33 @@ class core:
 
                 dependencies = module_info.get("dependency", {})
                 deps = []
-                for _, dep_list in dependencies.items():
-                    LOGGER.debug(f"Checking dependencies {dep_list}")
-                    for dependency in dep_list:
-                        dependency_lower = dependency.lower()
-                        if dependency_lower not in available_modules:
-                            raise ValueError(f"{dependency} is not present in modules")
-                        if dependency_lower == name.lower():
-                            raise ValueError(
-                                f"{dependency} can't be dependent on itself"
-                            )
-                        if not self.__modules.get(dependency_lower, {}).get(
-                            "enabled", True
-                        ):
-                            raise ValueError(
-                                f"{dependency} is not enabled, can't be dependent on a not enabled module"
-                            )
-                        deps.append(dependency_lower)
-                    self.__allowed_messages[name] = dep_list
+                if not dependencies:
+                    aux_msg = self.__modules[name]["message"]
+                    print(f"debug msg \n{aux_msg}\n")
+                    self.__allowed_messages[name] = aux_msg
+
+                ###### To do C, remove the below, probably
+                else:
+                    for _, dep_list in dependencies.items():
+                        LOGGER.debug(f"Checking dependencies {dep_list}")
+                        for dependency in dep_list:
+                            dependency_lower = dependency.lower()
+                            if dependency_lower not in available_modules:
+                                raise ValueError(f"{dependency} is not present in modules")
+                            if dependency_lower == name.lower():
+                                raise ValueError(
+                                    f"{dependency} can't be dependent on itself"
+                                )
+                            if not self.__modules.get(dependency_lower, {}).get(
+                                "enabled", True
+                            ):
+                                raise ValueError(
+                                    f"{dependency} is not enabled, can't be dependent on a not enabled module"
+                                )
+                            deps.append(dependency_lower)
+                        
+                        self.__allowed_messages[name] = dep_list
+                    
                 self.__dependencies[name] = deps
                 order = module_info.get("order")
                 if order is None:
@@ -205,6 +216,13 @@ class core:
         # self.__set_manager()
         self.__update_modules()
         self.__thread(func=self.__init_nats)
+        #print(f"debug2 Caio\n{}\n")
+        self.__thread(func=PROCESS.create_process(
+                            msg_syncronizator().initialize,
+                            wait=True,
+                            process_name="msg_syncronizator".upper(),
+                        ),
+                        name="msg_syncronizator")
 
         """
         Here, we should initialize the modules based on the order of initialization.
@@ -222,6 +240,10 @@ class core:
 
         self.__execute_steps_in_loop()
 
+    def __set_msg_sync():
+        
+        return 0
+    
     @handler.exception_handler
     def __set_scheduler(self):
         """
@@ -260,6 +282,7 @@ class core:
         module_class = getattr(
             __import__(f"modules.{module_name}", fromlist=[module_name]), module_name
         )
+        
         self.__imported_modules[module_name] = module_class()
         if not isinstance(self.__imported_modules[module_name], module):
             raise ValueError(f"{module_name} is not a module instance")

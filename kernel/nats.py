@@ -42,11 +42,13 @@ class nats:
         @param subject: The subject to send the message (mostly the module's name which will receive the message).
         """
         message = {module_name: msg}
+        
         if self.monitor:
             asyncio.create_task(self.monitor.monitor(message, module_name))
         encoded_msg = self.__encode(message)
         full_subject = "kernel." + subject
         LOGGER.debug(f"Sending message: {message} to {full_subject}")
+        
         await self.__clients[module_name].publish(full_subject, encoded_msg)
 
     def init(self):
@@ -94,11 +96,13 @@ class nats:
         @param module_name: The module name to be decoded.
         @return: The deserialized information.
         """
+        
         LOGGER.debug(f"Decoding message: {msg}")
         message = msg.data
         if message == b"\00":
             return None
         message_decoded = json.loads(message.decode())
+        
         LOGGER.debug(f"Decoded message: {message_decoded}")
         if self.__check_message(message_decoded, module_name):
             return [msg.subject, message_decoded]
@@ -115,10 +119,11 @@ class nats:
         @param message: The message to be checked in JSON format.
         @param module_name: The receiver module name.
         @return: True if the message is valid, False otherwise.
-        """
+        """        
         LOGGER.debug(
             f"Checking message: {message} for {module_name} in {self.__allowed_messages[module_name]}"
         )
+        
         if module_name not in self.__allowed_messages:
             LOGGER.debug(
                 f"Module {module_name} not in allowed messages: {self.__allowed_messages}"
@@ -127,7 +132,7 @@ class nats:
         else:
             for key in message.keys():
                 message_keys = set(message[key].keys())
-                allowed_keys = set(self.__allowed_messages[module_name][key])
+                allowed_keys = set(self.__allowed_messages[module_name])
                 if not message_keys.issubset(allowed_keys):
                     LOGGER.debug(
                         f"Key {key} not in allowed messages: {self.__allowed_messages[module_name][key]}"

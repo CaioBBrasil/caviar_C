@@ -182,15 +182,24 @@ class airsim(module):
             raise Exception("Collision detected")
         speed = np.linalg.norm(HELPER.airsim_getlinearvel())
         stamp = time.time()  # HELPER.airsim_gettimestamp()
-        message = {
-            "x-pos": float(pose[0]),
-            "y-pos": float(pose[1]),
-            "z-pos": float(pose[2]),
-            "roll": float(orientation[0]),
-            "pitch": float(orientation[1]),
-            "yaw": float(orientation[2]),
-            "speed": float(speed),
-            "timestamp": float(stamp),
+        #message = {
+        #    "x-pos": float(pose[0]),
+        #    "y-pos": float(pose[1]),
+        #    "z-pos": float(pose[2]),
+        #   "roll": float(orientation[0]),
+        #    "pitch": float(orientation[1]),
+        #    "yaw": float(orientation[2]),
+        #    "speed": float(speed),
+        #    "timestamp": float(stamp),
+        #}
+        
+        message = { 
+                   "object1":{
+                        "position" : pose.tolist(),
+                        "angles": orientation.tolist(),
+                        "speed": float(speed)},
+            
+                    "timestamp": float(stamp)
         }
         if HELPER.has_uav_arrived(
             self.final_pose[0], self.final_pose[1], self.final_pose[2]
@@ -198,7 +207,8 @@ class airsim(module):
             raise Exception("UAV has arrived to the final destination")
 
         # Send the message to sionna
-        await NATS.send(self.__class__.__name__, message, "ns3")
+        await NATS.send(self.__class__.__name__, message, "airsim")
+        
         if not self._start_streaming:
             LOGGER.info("Starting video streaming")
             self._start_streaming = True

@@ -1,14 +1,13 @@
 {
     "module": {
-        "name": "airsim",
+        "name": "mobsat",
         "id": "mobility",
         "enabled": true,
-        "order": 0,
         "dependency":{},
+        "order": 1,
         "message":[
-                    "object1",
+                    "INSS",
                     "timestamp"
                  ]
-        
     }
 }

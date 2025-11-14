@@ -84,7 +84,6 @@ class module(ABC):
         """
         This method initializes the module's subscription.
         """
-        
         LOOP.run_until_complete(
             NATS.init_subscription(
                 callback=self.__callback, module_name=self.__class__.__name__
@@ -97,9 +96,7 @@ class module(ABC):
         This method is the internal message callback.
         It is responsible for calling the user-defined callback and setting the available flag.
         """
-        
         msg = NATS.decode(msg, self.__class__.__name__)
-            
             
         """
         @TODO: This is probably causing a soft-bug, since the callback could be innvoked
@@ -114,6 +111,7 @@ class module(ABC):
         LOGGER.debug(
             f"Module {self.__class__.__name__} received message: {msg} in subprocess {os.getpid()}"
         )
+        
         self.buffer.add(msg)
         PROCESS.QUEUE.put(
             [self.__class__.__name__, True]
