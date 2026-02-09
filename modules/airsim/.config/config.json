@@ -5,10 +5,19 @@
         "enabled": true,
         "order": 0,
         "dependency":{},
-        "message":[
-                    "object1",
-                    "timestamp"
-                 ]
+        "message":{
+            "publish":[
+                "airsim.position",
+                "airsim.angles",
+                "airsim.velocity",
+                "airsim.grafana"
+                ],
+
+            "subscribe":[ 
+
+                ]
+        }
+                
         
     }
 }

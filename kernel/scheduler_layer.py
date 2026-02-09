@@ -228,6 +228,7 @@ class Async(Scheduler):
                     """
                     LOGGER.debug(f"Module {reference} is allowed.")
                     self.__allowed_substeps.append(Substep(reference))
+        
         LOGGER.debug(f"Allowed modules to run in Event: {self.__allowed_substeps}")
 
     async def _execute_step(self):

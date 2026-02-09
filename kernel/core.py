@@ -11,7 +11,7 @@ from .handler import handler
 from .management_layer import LOGGER, logging, PROCESS
 from .module import module
 from .nats import NATS
-from .the_syncronizator import msg_syncronizator
+from .MessageSynchronizer import MessageSynchronizer
 
 # from .synchronous import Sync
 
@@ -65,7 +65,7 @@ class core:
         the module names and the order of initialization in the core object.
         """
         LOGGER.debug(f"Updating modules")
-
+        
         module_paths = glob.glob(
             str(self.__dir.parent / "modules/*/.config/config.json")
         )  # Assuming all modules are in modules dir
@@ -141,14 +141,14 @@ class core:
         ids = {"communication", "mobility", "AI", "3D"}
         path = self.__dir.parent / "modules/"
         available_modules = {filename.lower() for filename in os.listdir(path)}
-
+        subtopic_dict = {}
         for _, module_info in self.__modules.items():
             enabled = module_info.get("enabled", True)
             if not isinstance(enabled, bool):
                 raise ValueError("The 'enabled' field must be a boolean")
 
             self.__enable[module_info["name"].strip().lower()] = enabled
-
+            
             if enabled:
                 LOGGER.info(f"Module information: {module_info}")
 
@@ -157,39 +157,43 @@ class core:
                     raise ValueError("Your module must have a non-empty name")
 
                 module_id = module_info.get("id")
+    
                 if module_id not in ids:
                     raise ValueError(f"ID must be one of {ids}")
 
                 dependencies = module_info.get("dependency", {})
-                deps = []
-                if not dependencies:
-                    aux_msg = self.__modules[name]["message"]
-                    print(f"debug msg \n{aux_msg}\n")
-                    self.__allowed_messages[name] = aux_msg
+                
+                msgs_format = self.__modules[name]["message"]
+                for _, topics in msgs_format.items():
+                    for topic in topics:
+                        if topic not in self.__allowed_messages.keys(): 
+                            self.__allowed_messages[topic] = [topic.split(".")[1].lower(), "timestamp"]
 
+                self.__allowed_messages["synchronizator.message"] = ["message", "timestamp"]
                 ###### To do C, remove the below, probably
-                else:
-                    for _, dep_list in dependencies.items():
-                        LOGGER.debug(f"Checking dependencies {dep_list}")
-                        for dependency in dep_list:
-                            dependency_lower = dependency.lower()
-                            if dependency_lower not in available_modules:
-                                raise ValueError(f"{dependency} is not present in modules")
-                            if dependency_lower == name.lower():
-                                raise ValueError(
-                                    f"{dependency} can't be dependent on itself"
-                                )
-                            if not self.__modules.get(dependency_lower, {}).get(
-                                "enabled", True
-                            ):
-                                raise ValueError(
-                                    f"{dependency} is not enabled, can't be dependent on a not enabled module"
-                                )
-                            deps.append(dependency_lower)
-                        
-                        self.__allowed_messages[name] = dep_list
-                    
-                self.__dependencies[name] = deps
+                if False:
+                        for _, dep_list in dependencies.items():
+                            LOGGER.debug(f"Checking dependencies {dep_list}")
+                            for dependency in dep_list:
+                                dependency_lower = dependency.lower()
+                                if dependency_lower not in available_modules:
+                                    raise ValueError(f"{dependency} is not present in modules")
+                                if dependency_lower == name.lower():
+                                    raise ValueError(
+                                        f"{dependency} can't be dependent on itself"
+                                    )
+                                if not self.__modules.get(dependency_lower, {}).get(
+                                    "enabled", True
+                                ):
+                                    raise ValueError(
+                                        f"{dependency} is not enabled, can't be dependent on a not enabled module"
+                                    )
+                                deps.append(dependency_lower)
+                            
+                            self.__allowed_messages[name] = dep_list
+                
+
+                self.__dependencies[name] = []
                 order = module_info.get("order")
                 if order is None:
                     raise ValueError("Your module must have an order of initialization")
@@ -199,6 +203,9 @@ class core:
                 """
                 self.__update_order(name, order)
 
+
+            
+           
     @handler.exception_handler
     def initialize(self):
         """
@@ -218,7 +225,7 @@ class core:
         self.__thread(func=self.__init_nats)
         #print(f"debug2 Caio\n{}\n")
         self.__thread(func=PROCESS.create_process(
-                            msg_syncronizator().initialize,
+                            MessageSynchronizer().initialize,
                             wait=True,
                             process_name="msg_syncronizator".upper(),
                         ),

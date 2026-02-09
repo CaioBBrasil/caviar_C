@@ -2,7 +2,6 @@ import asyncio
 
 from .management_layer import LOGGER
 from .nats import NATS
-from .buffer_layer import Buffer
 
 ################################################
 class ExecuteStep:

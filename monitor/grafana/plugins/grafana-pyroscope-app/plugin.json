@@ -11,7 +11,8 @@
         "plugins": [],
         "extensions": {
             "exposedComponents": [
-                "grafana-o11yinsights-app/insights-launcher/v1"
+                "grafana-o11yinsights-app/insights-launcher/v1",
+                "grafana-adaptiveprofiles-app/resolution-boost/v1"
             ]
         }
     },
@@ -39,8 +40,8 @@
                 "path": "img/hero-image.png"
             }
         ],
-        "version": "1.10.0",
-        "updated": "2025-09-25",
+        "version": "1.16.0",
+        "updated": "2026-01-28",
         "links": [
             {
                 "name": "GitHub",
@@ -63,10 +64,14 @@
         }
     ],
     "extensions": {
-        "extensionPoints": [
+        "exposedComponents": [
             {
-                "id": "grafana-pyroscope-app/investigation/v1"
-            },
+                "id": "grafana-pyroscope-app/embedded-profiles-exploration/v1",
+                "title": "Embedded Profiles Exploration",
+                "description": "A component that renders a profiles exploration view that can be embedded in other parts of Grafana."
+            }
+        ],
+        "extensionPoints": [
             {
                 "id": "grafana-pyroscope-app/settings/v1"
             }
@@ -83,5 +88,18 @@
             }
         ]
     },
+    "routes": [
+        {
+            "path": "/grafanacom-api/instances",
+            "method": "GET",
+            "url": "{{.SecureJsonData.gcomApiUrl}}/instances/{{.SecureJsonData.stackId}}",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "content": "Bearer {{.SecureJsonData.gcomApiToken}}"
+                }
+            ]
+        }
+    ],
     "buildMode": "production"
 }

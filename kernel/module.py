@@ -1,5 +1,6 @@
 import asyncio
 import os
+import json
 from abc import ABC, abstractmethod
 
 from .buffer_layer import Buffer
@@ -31,6 +32,13 @@ class module(ABC):
         )  # !< Buffer of the module (using size equal to 100 as default)
         self._lock = asyncio.Lock()
         self.loop = LOOP  # !< The event loop of the module
+        
+        aux_config_path = "modules/"+self.__class__.__name__+"/.config/config.json"
+        with open(aux_config_path, "r") as file:
+            module_config = json.load(file)["module"]["message"]
+            
+        self.topics2subscribe = module_config["subscribe"]
+        self.buffers = {i : Buffer(10000) for i in self.topics2subscribe }
 
     @abstractmethod
     def _do_init(self):
@@ -69,7 +77,7 @@ class module(ABC):
         but yeah I need to think more about this.
         """
         self._do_init()
-        LOGGER.debug(f"Initializing {self.__class__.__name__.upper()} subscription")
+        LOGGER.debug(f"Initializing {self.__class__.__name__.lower()} subscription")
         self.__init_subscription()
 
         """
@@ -84,12 +92,31 @@ class module(ABC):
         """
         This method initializes the module's subscription.
         """
+        
+        def make_callback(subsc_topic):
+            async def callback(msg):
+                await self.__othersCallback(msg, subsc_topic)
+            return callback
+        for subsc_topic in self.topics2subscribe:
+            cb = make_callback(subsc_topic)
+            LOOP.run_until_complete(
+                NATS.init_subscription(
+                    callback=cb, module_name= self.__class__.__name__,  topic=subsc_topic
+                )
+            )
+            
         LOOP.run_until_complete(
             NATS.init_subscription(
-                callback=self.__callback, module_name=self.__class__.__name__
+                callback=self.__callback, module_name= self.__class__.__name__.lower(), topic=f"{self.__class__.__name__}.stepsignal"
             )
         )
-
+        
+    async def __othersCallback(self, msg, topic):
+        #print(msg)
+        msg = NATS.decode(msg, topic)
+        if msg is not None:
+            self.buffers[topic].add(msg)
+               
     @handler.async_exception_handler
     async def __callback(self, msg):
         """
@@ -97,17 +124,25 @@ class module(ABC):
         It is responsible for calling the user-defined callback and setting the available flag.
         """
         msg = NATS.decode(msg, self.__class__.__name__)
-            
+        
         """
         @TODO: This is probably causing a soft-bug, since the callback could be innvoked
         multiple time by some module message. So the control message may be backpressured
         and the module will not be able to execute the step.
         """
-        
         if msg is None:
-            async with self._lock:
-                await self.__execute_step()
-            return
+            if self.topics2subscribe:
+                if not any(len(buf) == 0 for buf in self.buffers.values()):
+                    async with self._lock:
+                        
+                        await self.__execute_step()
+                    return
+            else:
+                async with self._lock:
+                    
+                    await self.__execute_step()
+                return
+            
         LOGGER.debug(
             f"Module {self.__class__.__name__} received message: {msg} in subprocess {os.getpid()}"
         )

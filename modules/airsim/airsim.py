@@ -1,7 +1,9 @@
 import asyncio
 import os
 import time
-
+import json
+from skyfield.api import load, wgs84
+import math
 import airsim as ARS
 import numpy as np
 
@@ -62,11 +64,30 @@ class airsim(module):
     """
     The resolution of the video stream.
     """
-
+    actual_time = time.time()
     def _do_init(self):
         """
         This method initializes all the necessary AirSim configuration.
         """
+        general_settings_path = "kernel/.config/config.json"
+        with open(general_settings_path, 'r') as f:
+            tmp_gs = json.load(f)   
+        self.base_date = tmp_gs["timeinf"]["DATE"]
+        self.ref_latlonalt = wgs84.latlon(tmp_gs["timeinf"]["LAT"],
+                                          tmp_gs["timeinf"]["LON"],
+                                          tmp_gs["timeinf"]["ALT"])
+        
+        self.ref_ecef = self.ref_latlonalt.itrs_xyz.m
+        
+        lon = self.ref_latlonalt.longitude.radians
+        lat =  self.ref_latlonalt.latitude.radians
+    
+        self.r = np.array([
+            [-np.sin(lon),              np.cos(lon),               0],
+            [-np.sin(lat)*np.cos(lon), -np.sin(lat)*np.sin(lon), np.cos(lat)],
+            [ np.cos(lat)*np.cos(lon),  np.cos(lat)*np.sin(lon), np.sin(lat)]
+        ]) 
+        
         LOGGER.info(f"AirSim Do Init waiting for AirSim connection")
         dir_path = os.path.dirname(os.path.realpath(__file__))
         beach_street_path = os.path.join(
@@ -181,7 +202,16 @@ class airsim(module):
         if HELPER.airsim_getcollision():
             raise Exception("Collision detected")
         speed = np.linalg.norm(HELPER.airsim_getlinearvel())
-        stamp = time.time()  # HELPER.airsim_gettimestamp()
+        
+        dif_time = time.time() - self.actual_time
+        timer = self.base_date + dif_time
+        stamp = timer # HELPER.airsim_gettimestamp()
+
+        enu = np.array([pose[0], pose[1], -pose[2]])
+        ecef_offset = self.r @ enu
+        ecef_drone = self.ref_ecef + ecef_offset
+        
+        
         #message = {
         #    "x-pos": float(pose[0]),
         #    "y-pos": float(pose[1]),
@@ -192,28 +222,82 @@ class airsim(module):
         #    "speed": float(speed),
         #    "timestamp": float(stamp),
         #}
+        grafpose = self.ecef_xyz_to_latlonalt(list(ecef_drone))
+    
+        grafana_msg = {"TN": list(grafpose)}
+        message_grafana = {"grafana": grafana_msg,
+                            "timestamp": float(stamp)}
         
-        message = { 
-                   "object1":{
-                        "position" : pose.tolist(),
-                        "angles": orientation.tolist(),
-                        "speed": float(speed)},
-            
-                    "timestamp": float(stamp)
-        }
+        msg_pose = {"TN": list(ecef_drone)}
+        message_position = {"position": msg_pose,
+                            "timestamp": float(stamp)}
+        
+        msg_ang = {"TN": orientation.tolist()}
+        message_angle = {"angles": msg_ang,
+                            "timestamp": float(stamp)}
+        
+        msg_vel = {"TN": float(speed)}
+        message_velocity = {"velocity": msg_vel,
+                            "timestamp": float(stamp)}
+
         if HELPER.has_uav_arrived(
             self.final_pose[0], self.final_pose[1], self.final_pose[2]
         ):
             raise Exception("UAV has arrived to the final destination")
+        #print(stamp)
+        #print(f"debug airsim\n{message_position}\n")
 
         # Send the message to sionna
-        await NATS.send(self.__class__.__name__, message, "airsim")
+        await NATS.send("airsim.position", message_position)
+        await NATS.send("airsim.angles", message_angle)
+        await NATS.send("airsim.velocity", message_velocity)
+        await NATS.send("airsim.grafana", message_grafana)
+        
         
         if not self._start_streaming:
             LOGGER.info("Starting video streaming")
             self._start_streaming = True
             # Start the video streaming
-            asyncio.create_task(self.__start_video_streaming())
+            #asyncio.create_task(self.__start_video_streaming())
+            
+
+    def ecef_xyz_to_latlonalt(self, xyz_m):
+        
+        WGS84_A = 6378137.0                 # semi-major axis (m)
+        WGS84_E2 = 6.69437999014e-3         # eccentricity squared
+        """
+        Converte ECEF XYZ (metros) para latitude, longitude e altitude (WGS84)
+
+        Parâmetros:
+            xyz_m : array-like [x, y, z] em metros
+
+        Retorna:
+            lat_deg, lon_deg, alt_m
+        """
+        x, y, z = xyz_m
+
+        # Longitude
+        lon = math.atan2(y, x)
+
+        # Distância ao eixo Z
+        p = math.sqrt(x*x + y*y)
+
+        # Latitude inicial (geocêntrica)
+        lat = math.atan2(z, p * (1 - WGS84_E2))
+
+        # Iteração para latitude geodésica
+        for _ in range(5):
+            sin_lat = math.sin(lat)
+            N = WGS84_A / math.sqrt(1 - WGS84_E2 * sin_lat * sin_lat)
+            lat = math.atan2(z + WGS84_E2 * N * sin_lat, p)
+
+        # Altitude
+        sin_lat = math.sin(lat)
+        N = WGS84_A / math.sqrt(1 - WGS84_E2 * sin_lat * sin_lat)
+        alt = p / math.cos(lat) - N
+
+        return [math.degrees(lat), math.degrees(lon), alt]
+
 
     async def __start_video_streaming(self):
         """

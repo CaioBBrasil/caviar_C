@@ -31,7 +31,7 @@ class nats:
         self._monitor = None
         pass
 
-    async def send(self, module_name: str, msg: dict, subject: str):
+    async def send(self, topic: str, msg: dict):
         """
         This method sends a message to the NATS server in a specific subject.
         If the monitoring is set, it will send the message to the monitor
@@ -41,15 +41,19 @@ class nats:
         @param msg: The message to be sent.
         @param subject: The subject to send the message (mostly the module's name which will receive the message).
         """
-        message = {module_name: msg}
+        module_name = topic.split(".")[0].lower()        
         
         if self.monitor:
-            asyncio.create_task(self.monitor.monitor(message, module_name))
-        encoded_msg = self.__encode(message)
-        full_subject = "kernel." + subject
-        LOGGER.debug(f"Sending message: {message} to {full_subject}")
+            asyncio.create_task(self.monitor.monitor())
+        encoded_msg = self.__encode(msg)
+        LOGGER.debug(f"Sending message: {msg} to {topic}")
         
-        await self.__clients[module_name].publish(full_subject, encoded_msg)
+        if module_name not in self.__clients:
+            nc = await Nats.connect(allow_reconnect=True)
+            self.__clients[module_name] = nc
+        
+        
+        await self.__clients[module_name].publish(topic, encoded_msg)
 
     def init(self):
         """
@@ -70,14 +74,14 @@ class nats:
     def receive(self):
         pass
 
-    def decode(self, msg, module_name: str = ""):
+    def decode(self, msg, topic: str = ""):
         """
         This method decodes a message received from the NATS server.
 
         @param msg: The message to be decoded.
         @return: The decoded information.
         """
-        return self.__decode(msg, module_name)
+        return self.__decode(msg, topic)
 
     def __encode(self, msg):
         """
@@ -85,7 +89,7 @@ class nats:
         Here, always use JSON to serialize the message."""
         return json.dumps(msg).encode()
 
-    def __decode(self, msg, module_name: str):
+    def __decode(self, msg, topic: str):
         """
         Basically, __decodes to retrieve the deserialized information, in format:
         [subject, message]. It also checks if the message is valid, acoording to the module
@@ -104,14 +108,16 @@ class nats:
         message_decoded = json.loads(message.decode())
         
         LOGGER.debug(f"Decoded message: {message_decoded}")
-        if self.__check_message(message_decoded, module_name):
+            
+        if self.__check_message(message_decoded, topic):
+            
             return [msg.subject, message_decoded]
         else:
             raise ValueError(
-                f"Message {message_decoded} is not an allowed message for {module_name}"
+                f"Message {message_decoded} is not an allowed message for {topic}"
             )
 
-    def __check_message(self, message, module_name):
+    def __check_message(self, message, topic):
         """
         This method checks if the message is a valid message.
         Here it checks if the message has the same keys as the allowed messages.
@@ -119,28 +125,28 @@ class nats:
         @param message: The message to be checked in JSON format.
         @param module_name: The receiver module name.
         @return: True if the message is valid, False otherwise.
-        """        
+        """     
+      
         LOGGER.debug(
-            f"Checking message: {message} for {module_name} in {self.__allowed_messages[module_name]}"
+            f"Checking message: {message} for {topic} in {self.__allowed_messages}"
         )
-        
-        if module_name not in self.__allowed_messages:
+                
+        if topic not in self.__allowed_messages:
             LOGGER.debug(
-                f"Module {module_name} not in allowed messages: {self.__allowed_messages}"
+                f"Module {topic} not in allowed messages: {self.__allowed_messages}"
             )
             return False
         else:
             for key in message.keys():
-                message_keys = set(message[key].keys())
-                allowed_keys = set(self.__allowed_messages[module_name])
-                if not message_keys.issubset(allowed_keys):
+                if key not in self.__allowed_messages[topic]:
                     LOGGER.debug(
-                        f"Key {key} not in allowed messages: {self.__allowed_messages[module_name][key]}"
-                    )
+                            f"Key {key} not in allowed messages: {self.__allowed_messages[topic]}"
+                        )
                     return False
+                    
         return True
 
-    async def init_subscription(self, callback, module_name=""):
+    async def init_subscription(self, callback, module_name, topic):
         """
         This method sets a NATS subscription to a specific module.
 
@@ -150,9 +156,11 @@ class nats:
         * Afix will be the `module name`
         @param callback: The callback to be called when a message is received.
         """
-        subscription = "kernel." + module_name
-        LOGGER.debug(f"Subscribing to \033[1m {subscription} \033[0m")
-    
+      
+        #module_name = topic.split(".")[0].lower()    
+        LOGGER.debug(f"Subscribing to \033[1m {topic} \033[0m")
+        
+        
         await asyncio.sleep(
             0.5
         )  # __Really ugly__ hack to wait for the NATS server to start
@@ -167,7 +175,7 @@ class nats:
             self.__clients[module_name] = nc
             
         
-        await nc.subscribe(subscription, cb=callback)
+        await nc.subscribe(topic, cb=callback)
         await nc.flush()
 
     async def close_clients(self):
@@ -190,6 +198,7 @@ class nats:
         """
         LOGGER.debug(f"Setting allowed messages: {messages}")
         self.__allowed_messages = messages
+        
 
     async def multicast(self, references, message=""):
         """
@@ -203,10 +212,11 @@ class nats:
         @param references: The references to be sent.
         @param message: The message to be sent.
         """
+    
         nc = await Nats.connect()
         LOGGER.debug(f"Multicasting to {references}")
-        subjects = [f"kernel.{reference}" for reference in references]
-        
+        subjects = [f"{reference.lower()}.stepsignal" for reference in references]
+
         if not message:
             message = b"\00"
         """

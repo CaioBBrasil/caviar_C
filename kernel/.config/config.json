@@ -1,4 +1,9 @@
-{
+{   "timeinf":{
+        "DATE": 1762252234,
+        "LAT": 47.8939,
+        "LON": -120.8917,
+        "ALT": 123
+    },
     "scheduler": {
         "type": "async",
         "time": "virtual",
@@ -12,6 +17,13 @@
         "nats": {
             "host": "nats://localhost:4222",
             "port": 4222
+        }
+    },
+    "msgSynchron": {
+        "topics":{
+            "position": ["airsim", "mobsat"],
+            "velocity": ["airsim", "mobsat"],
+            "angles":   ["airsim"]
         }
     }
 }

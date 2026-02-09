@@ -5,9 +5,16 @@
         "enabled": true,
         "dependency":{},
         "order": 1,
-        "message":[
-                    "INSS",
-                    "timestamp"
-                 ]
+        "message":{
+            "publish":[
+                "mobsat.position",
+                "mobsat.velocity",
+                "mobsat.grafana"
+                ],
+
+            "subscribe":[ 
+
+                ]
+        }
     }
 }

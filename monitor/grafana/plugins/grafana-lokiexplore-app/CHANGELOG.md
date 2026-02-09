@@ -1,5 +1,247 @@
 # Changelog
 
+## 1.0.35
+
+##### Chores
+
+* **cve:**  tar, remix, node 24 (#1736) (afd1ac99)
+*  add memberlist store and per request limits (#1648) (2812f4cb)
+* **deps:**
+  *  update dependency @lezer/lr to v1.4.8 (#1725) (10a424e5)
+  *  update dependency @types/node to v20.19.30 (#1726) (622bfd57)
+  *  update dependency terser-webpack-plugin to v5.3.16 (#1727) (b3c1c914)
+  *  update grafana/shared-workflows/create-github-app-token action to v0.2.2 (#1728) (bbe62f04)
+  *  update actions/cache action to v4.3.0 (#1732) (938f0a41)
+  *  update actions/checkout action to v4.3.1 (#1733) (e6bcfab8)
+  *  update actions/setup-node action to v4.4.0 (#1734) (81cfcbce)
+* **feature flags:**  add openfeature flags (#1711) (10a8cc4c)
+
+##### New Features
+
+* **config:**  wrap default columns in error boundary (#1735) (c004f683)
+* **SaveSearch:**  Add support to save filters (or queries) to local storage or to Saved Queries if available (#1702) (c3003ed0)
+
+##### Bug Fixes
+
+*  set correct datasource when embedding log drilldown component (#1737) (9ed21863)
+* **deps:**
+  *  update dependency @gtk-grafana/react-json-tree to ^0.0.13 (#1729) (50597cf1)
+  *  update module github.com/spf13/pflag to v1.0.10 (#1731) (b7f486f8)
+  *  update grafana packages (#1730) (3f2f2e96)
+* **LoadSearchScene:**  pass context to exposed component (#1724) (08b14163)
+* **assistant:**  add `instructions` for structured metadata for Assistant (#1723) (23f45935)
+
+
+## 1.0.34
+
+##### Chores
+
+* **cp:**  update create-plugin (#1716) (b66d9a4b)
+* **default-columns:**
+  *  fix version gate (#1710) (47d2c4dd)
+  *  Tracking events (#1700) (d02be463)
+  *  upgrade API from alpha to beta (#1698) (093ea429)
+* **version:**  match grafana version to the playwright matrix version (#1701) (ed0883c2)
+* **deps:**  add lint-staged as dep (#1697) (97b2f321)
+*  remove investigations (#1690) (0452541f)
+
+##### Documentation Changes
+
+*  Second attempt to fix shared content (#1719) (5c5cf885)
+*  remove version (#1717) (44bf000d)
+*  Update troubleshooting topic (#1714) (40355e79)
+
+##### New Features
+
+*  App config default columns (#1664) (28b4ca93)
+
+##### Bug Fixes
+
+* **links:**  upgrade to clipboard.write for ios/safari (#1707) (948229a9)
+* **table:**  Improve table size container and fix resize behavior with docked Mega Menu (#1695) (80114e8e)
+
+##### Other Changes
+
+* enterprise (#1708) (fd352740)
+
+##### Tests
+
+*  App config default columns  (#1686) (3b54605e)
+
+
+## 1.0.33
+
+##### Chores
+
+*  show logs when primary is regex (#1680) (e2001ada)
+*  add menuPosition=absolute (#1673) (1462866a)
+* **deps:**
+  *  update otel/opentelemetry-collector-contrib:latest docker digest to b14234c (#1658) (1b8f06a4)
+  *  update grafana/alloy:latest docker digest to 85e4a70 (#1657) (aeaa4516)
+
+##### Documentation Changes
+
+*  Updating for new visualization (#1674) (628efe82)
+
+##### New Features
+
+*  auto-tab on service selection when pop first label key (#1691) (8d129529)
+*  allow numeric operators on int fields (#1677) (89ba07a8)
+* **embedded:**  field filters support (#1683) (ef4445db)
+
+##### Bug Fixes
+
+* **js-yaml:**  update js-yaml to 4.1.1 (#1688) (612fb4ee)
+* **qs:**  update qs to 6.14.1 (#1687) (ab7b59d0)
+* **EmbeddedLogs:**  use custom value prefix for regular expressions (#1678) (fdf6c289)
+*  non-portaled select options (#1676) (07e1be7c)
+
+
+## 1.0.32
+
+##### Chores
+
+* **ci/cd:**  pin workflow to verison 4.0.0 (#1671) (7f01482e)
+* **deps:**
+  *  update dependency @types/lodash to v4.17.21 (#1661) (a775a87f)
+  *  update dependency @lezer/lr to v1.4.4 (#1660) (e4a528c0)
+  *  update dependency @babel/core to v7.28.5 (#1659) (b5b5fd46)
+  *  update grafana/shared-workflows/ action to (#1655) (5ab50003)
+  *  update grafana/grafana-enterprise:latest docker digest to 96a793a (#1654) (64cc204c)
+  *  update golang:1.24 docker digest to 7b13449 (#1653) (fc3cfde9)
+  *  update actions/checkout digest to 34e1148 (#1652) (534a2df4)
+  *  pin dependencies (#1651) (b80907a9)
+* **renovate:**  remove minimunReleaseAge (#1656) (b8468687)
+* **ci:**  update grafana levitate dependencies (#1646) (00b552bb)
+
+##### New Features
+
+* **fields:**  support `avg_over_time` for `int` fields (#1637) (8a5be4e0)
+* **lokiConfig:**  disable patterns if pattern_ingester_enabled is false (#1669) (b364f56c)
+* **embedded:**  allow hiding time picker (#1666) (0eaab841)
+* **links:**  add sortOrder support (#1649) (85e57038)
+* **time-picker:**  add rolling time window options (#1625) (038e5dfa)
+
+
+## 1.0.31
+
+##### Chores
+
+* **deps-dev:**  bump glob in the npm_and_yarn group across 1 directory (#1638) (787bb202)
+* **ci:**
+  *  update permissions (#1633) (fb786b2b)
+  *  use new token generation (#1619) (075a6415)
+  *  used outputs (#1610) (57575f65)
+  *  update deployment tools wf (#1603) (d4f4af3c)
+*  update nvmrc (#1628) (48aa341e)
+*  hide toast (#1605) (c8a7663d)
+*  comment local live reload (#1607) (1890b8b3)
+*  update playwright (#1606) (acf6cb1b)
+*  update border radii (#1602) (4c353583)
+*  set override modifier (#1599) (0bc9211b)
+* **deps:**
+  *  update dependency style-loader to v3.3.4 (#1614) (d1a05e05)
+  *  update grafana/alloy:latest docker digest to 8c7256f (#1613) (529289ea)
+  *  update golang:1.24 docker digest to 5034fa4 (#1612) (b46d194b)
+  *  pin grafana/plugin-ci-workflows action to ddc6565 (#1611) (d7b4bf10)
+  *  update dependency sass-loader to v13.3.3 (#1594) (7095a5b4)
+  *  update dependency eslint-config-prettier to v8.10.2 (#1593) (f3f2d9b9)
+  *  update golang:1.24 docker digest to 5056a22 (#1592) (552e5e21)
+* **config:**  migrate config renovate.json (#1596) (d8d23822)
+
+##### Documentation Changes
+
+*  Add patterns troubleshooting (#1600) (3055db7b)
+
+##### New Features
+
+* **time-picker:**  filter time ranges that exceed max retention (#1621) (010becaa)
+* **config:**  Support Loki config API endpoint (#1526) (23c627f2)
+* **Dashboards:**  Add to dashboard from any panel (#1608) (2d3d8c3d)
+* **Grafana Assistant:**  Improve context, provide questions, and cleanup (#1598) (c7024136)
+* **Extensions:**  expose a function to create URL to the app dynamically (#1573) (37b60a11)
+
+##### Bug Fixes
+
+* **Table:**  copy from the right source (#1643) (a444b2ac)
+*  logs volume not showing logs without detected_level (#1630) (01a42e4f)
+* **deps:**  update grafana packages (#1615) (b02e67a1)
+
+##### Other Changes
+
+*  bump version to 0.1.4 (#1618) (2742a609)
+
+
+## 1.0.30
+
+##### Chores
+
+* **renovate:**  add renovate.json, pin gha to versions, remove old workflows (#1591) (bfca4fb9)
+* **deps:**
+  *  update dependency @types/testing-library__jest-dom to v5.14.9 (#1587) (a71d0d49)
+  *  update dependency @grafana/plugin-e2e to v2.2.2 (#1585) (b9177b7f)
+  *  update dependency @babel/core to v7.28.4 (#1584) (12bbee06)
+  *  update grafana/shared-workflows/ action to (#1583) (d47ab19c)
+  *  update grafana/shared-workflows/ action to (#1578) (379bbf45)
+  *  pin dependencies (#1577) (e02237b2)
+*  bump @grafana/assistant to 0.1.0 (#1575) (fee5ebb0)
+*  bump @grafana/create-plugin configuration to 5.26.9 (#1559) (9e677349)
+
+##### New Features
+
+* **LogsPanel:**  enable field selector (#1590) (44f217f6)
+* **LogsListScene:**  add defaultDisplayedFields support (#1554) (cf080432)
+* **EmptyLogs:**  add button to fix with assistant (#1571) (01e343da)
+* **table:**  preferences (#1534) (924ebd23)
+
+##### Bug Fixes
+
+* **extensions:**  context.targets null check (#1589) (bdccee20)
+* **deps:**  update github.com/grafana/loki-client-go digest to c42bbdd (#1579) (9e08a22a)
+
+
+## 1.0.29
+
+##### Documentation Changes
+
+*  Update troubleshooting page (#1568) (437a568a)
+*  Update install and troubleshooting (#1564) (657880b3)
+*  update stale readme, fix docker install script (#1565) (fc776d76)
+
+##### Bug Fixes
+
+*  unexpected clear variable behavior (#1567) (089fdfa2)
+*  validate primary label correctly (#1561) (ee12a20b)
+*  fix RegExp.source removing flags, use toString instead (#1563) (a9207d23)
+*  stale urls (#1562) (e2eae8b8)
+
+
+## 1.0.28
+
+##### Chores
+
+*  fix runtime error when viewing label value breakdown (#1552) (e55074b5)
+*  upgrade Scenes and Grafana deps (#1548) (1f4455a7)
+* **docker:**  use grafana version from base docker file, run cp weekly (#1550) (c0955ffa)
+
+##### New Features
+
+* **embedded:**  allow resetting filters (#1549) (d6e536c6)
+*  add expanded log controls state (#1546) (77c9815f)
+*  Asserts insight timeline widget integration (#1543) (ec1c37ad)
+* **VariableLayoutScene:**
+  *  add control to expand and collapse (#1541) (053d8c90)
+  *  add control to expand and collapse (12eee7b1)
+
+##### Bug Fixes
+
+* **volume:**  Y-axis labels not shortened (#1540) (d63e2a32)
+
+##### Other Changes
+
+* **VariableLayoutScene:**  add control to expand and collapse" (f801ae66)
+
+
 ## 1.0.27
 
 ##### Chores

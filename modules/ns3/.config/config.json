@@ -1,0 +1,16 @@
+{
+    "module": {
+        "name": "ns3",
+        "id": "communication",
+        "enabled": true,
+        "order": 2,
+        "message":{
+            "publish":[
+                ],
+
+            "subscribe":[ 
+                "synchronizator.message"
+                ]
+        }
+    }
+}

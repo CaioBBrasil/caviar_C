@@ -1,5 +1,7 @@
 import asyncio
 import time
+import nats as Nats
+import json
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import ASYNCHRONOUS, SYNCHRONOUS
@@ -39,7 +41,52 @@ class Monitor:
             write_options=write_option
         )
 
-    async def monitor(self, msg: dict, module_name: str):
+    async def monitor(self):
+
+        nc = await Nats.connect(allow_reconnect=True)
+
+        async def handler(msg):
+            subject = msg.subject
+            
+            if not msg.data or msg.data == b"\x00":
+                return
+
+            
+            try:
+                data = json.loads(msg.data.decode())["grafana"]
+            except Exception:
+                return
+
+            
+            object_name, coords = next(iter(data.items()))
+            
+            lat, lon, alt = coords
+            
+            point = (
+                Point("nats_messages")
+                .tag("subject", subject)
+                .tag("object", object_name)   # 🔑 nome dinâmico
+                .field("lat", float(lat))
+                .field("lon", float(lon))
+                .field("alt", float(alt))
+                .time(time.time_ns(), WritePrecision.NS)
+            )
+
+            self._db.write(
+                bucket=self._bucket,
+                org=self._org,
+                record=point
+            )
+
+        # Apenas tópicos que terminam com .grafana
+        await nc.subscribe("*.grafana", cb=handler)
+
+        while True:
+            await asyncio.sleep(0.1)
+
+
+        
+    async def monitor2(self, msg: dict, module_name: str):
         """
         This method is the main loop of the monitor.
         It basically subscribes to all the enable module NATS topics.
